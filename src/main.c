@@ -3,8 +3,8 @@
 #include <GLFW/glfw3.h>
 
 #define LOG_H_IMPL
-#define SHADER_H_IMPL
-#include "shader.h"
+#include "log.h"
+#include "shaders.h"
 #include "triangles.h"
 
 void handleKeys(GLFWwindow* w, int key, int scancode, int action, int mods)

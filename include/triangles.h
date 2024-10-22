@@ -2,7 +2,7 @@
 #define TRIANGLES_H
 
 #include <GL/gl3w.h>
-#include "shader.h"
+#include "shaders.h"
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
