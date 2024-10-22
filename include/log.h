@@ -3,8 +3,6 @@
 
 #include <stdarg.h>
 
-void flog(const char* prefix, const char* format, va_list args);
-
 void print_debug(const char* format, ...);
 
 void print_error(const char* format, ...);
@@ -15,32 +13,27 @@ void logGlError(const char* msg);
 #ifdef LOG_H_IMPL
 
 #include <stdio.h>
-#include <string.h>
 #include "GL/gl3w.h"
 
-void flog(const char* prefix, const char* format, va_list args)
+static void flog(const char* prefix, const char* format, va_list args)
 {
-    char ext_format[strlen(prefix) + strlen(format) + 1 + 1];
-    memset(ext_format, 0, sizeof(ext_format));
-    strcat(ext_format, prefix);
-    strcat(ext_format, format);
-    strcat(ext_format, "\n");
-
-    vfprintf(stderr, ext_format, args);
+    fprintf(stderr, "%s ", prefix);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
 }
 
 void print_debug(const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    flog("[DEBUG] ", format, ap);
+    flog("[DEBUG]", format, ap);
 }
 
 void print_error(const char* format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    flog("[ERROR] ", format, ap);
+    flog("[ERROR]", format, ap);
 }
 
 void logGlError(const char* msg)

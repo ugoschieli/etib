@@ -11,8 +11,9 @@ typedef struct Shader {
 } Shader_t;
 
 typedef struct Program {
-    GLuint name;
     Shader_t* shaderList;
+    GLuint name;
+    int padding;
 } Program_t;
 
 Shader_t newShader(char* path, GLenum type);

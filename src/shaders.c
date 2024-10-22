@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char* loadFile(char* path)
+static char* loadFile(char* path)
 {
     FILE* f = fopen(path, "r");
     if (f == NULL) {
@@ -17,12 +17,12 @@ char* loadFile(char* path)
     }
 
     rewind(f);
-    char* buf = calloc(sizeof(char), size + 1);
+    char* buf = calloc(sizeof(char), (size_t)(size + 1));
     if (buf == NULL) {
         return NULL;
     }
 
-    size_t n = fread(buf, sizeof(char), size, f);
+    size_t n = fread(buf, sizeof(char), (size_t)size, f);
     if (n == 0) {
         print_error("failed to read file: %s", path);
     }
@@ -31,7 +31,7 @@ char* loadFile(char* path)
     return buf;
 }
 
-GLuint createShader(const char* src, GLenum type)
+static GLuint createShader(char* src, GLenum type)
 {
     GLuint shader = glCreateShader(type);
     if (shader == 0) {
@@ -39,7 +39,7 @@ GLuint createShader(const char* src, GLenum type)
         return 0;
     }
 
-    glShaderSource(shader, 1, &src, NULL);
+    glShaderSource(shader, 1, (const GLchar* const*)&src, NULL);
     free((void*)src);
     glCompileShader(shader);
 
@@ -57,7 +57,7 @@ GLuint createShader(const char* src, GLenum type)
     return shader;
 }
 
-GLuint createProgram(Shader_t* shaderList, size_t n)
+static GLuint createProgram(Shader_t* shaderList, size_t n)
 {
     GLuint program = glCreateProgram();
     for (size_t i = 0; i < n; ++i) {
@@ -82,7 +82,7 @@ Shader_t newShader(char* path, GLenum type)
     };
 
     return shader;
-};
+}
 
 Program_t newProgram(Shader_t* shaderList, size_t n)
 {

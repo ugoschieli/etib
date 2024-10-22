@@ -9,12 +9,14 @@
 typedef struct Triangle {
     GLuint vao;
     GLuint vbo;
-    Program_t* program;
-    GLfloat* vertices;
+    const Program_t* program;
+    const GLfloat* vertices;
 } Triangle_t;
 
-Triangle_t newTriangle(GLfloat* vertices, size_t n, Program_t* program);
+typedef void (*AttribInit)(void);
 
-void renderTriangle(Triangle_t* triangle);
+Triangle_t newTriangle(const GLfloat* vertices, size_t n, const Program_t* program, AttribInit init);
+
+void renderTriangle(const Triangle_t* triangle);
 
 #endif // TRIANGLES_H
