@@ -13,7 +13,7 @@ typedef struct Triangle {
     const GLfloat* vertices;
 } Triangle_t;
 
-typedef void (*AttribInit)(void);
+typedef void (*AttribInit)(GLuint);
 
 Triangle_t newTriangle(const GLfloat* vertices, size_t n, const Program_t* program, AttribInit init);
 

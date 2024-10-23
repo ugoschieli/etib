@@ -7,11 +7,9 @@ Triangle_t newTriangle(const GLfloat* vertices, size_t n, const Program_t* progr
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
     glNamedBufferStorage(vbo, (GLsizeiptr)(n * sizeof(GLfloat)), vertices, 0);
+    glVertexArrayVertexBuffer(vao, 0, vbo, 0, 6 * sizeof(GLfloat));
 
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    init();
+    init(vao);
 
     Triangle_t tri = {
         .vao = vao,

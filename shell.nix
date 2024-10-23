@@ -1,6 +1,7 @@
 { pkgs ? import <nixos> {} , ... } : 
 pkgs.mkShell {
     packages = with pkgs; [
+      clang-tools
       clang
       bear
       gnumake

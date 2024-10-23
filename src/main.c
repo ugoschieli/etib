@@ -1,7 +1,7 @@
+#include <math.h>
 #include <stdbool.h>
 #include "GL/gl3w.h"
 #include <GLFW/glfw3.h>
-#include <math.h>
 
 #define LOG_H_IMPL
 #include "log.h"
@@ -50,12 +50,16 @@ static Window_t initWindow(void)
     };
 }
 
-static void triInit(void)
+static void triInit(GLuint vao)
 {
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(vao, 1);
+
+    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribFormat(vao, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat));
+
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribBinding(vao, 1, 0);
 }
 
 int main(void)
@@ -82,10 +86,13 @@ int main(void)
     Program_t program = newProgram(shaderList, 2);
     Program_t program2 = newProgram(shaderList2, 2);
 
+    // stride = size in bytes between the beginning of two vertex (here 6 * sizeof(GLfloat)) (sizeof(vertex))
+    // first attrib position: offset 0
+    // second attrib color: offset 3 * sizeof(GLfloat)
     GLfloat vertices[] = {
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.37f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // first vertex
+        0.0f, 0.37f, 0.0f, 0.0f, 1.0f, 0.0f, // second vertex
+        0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // third vertex
     };
 
     Triangle_t tri = newTriangle(vertices, 18, &program, triInit);
