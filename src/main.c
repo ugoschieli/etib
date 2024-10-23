@@ -8,6 +8,16 @@
 #include "shaders.h"
 #include "triangles.h"
 #include "mat4.h"
+#include "uniform.h"
+
+typedef struct Window {
+    GLFWwindow* w;
+    GLFWmonitor* monitor;
+    int width;
+    int height;
+    float aspectRatio;
+    int refreshRate;
+} Window_t;
 
 static void handleKeys(GLFWwindow* w, int key, int scancode, int action, int mods)
 {
@@ -19,7 +29,7 @@ static void handleKeys(GLFWwindow* w, int key, int scancode, int action, int mod
     }
 }
 
-static GLFWwindow* initWindow(void)
+static Window_t initWindow(void)
 {
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -30,7 +40,14 @@ static GLFWwindow* initWindow(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     GLFWwindow* w = glfwCreateWindow(mode->width, mode->height, "Etib", monitor, 0);
 
-    return w;
+    return (Window_t) {
+        .w = w,
+        .monitor = monitor,
+        .width = mode->width,
+        .height = mode->height,
+        .aspectRatio = (float)mode->width / mode->height,
+        .refreshRate = mode->refreshRate
+    };
 }
 
 static void triInit(void)
@@ -46,40 +63,61 @@ int main(void)
     glfwInit();
     gl3wInit();
 
-    GLFWwindow* w = initWindow();
-    glfwSetKeyCallback(w, handleKeys);
-    glfwMakeContextCurrent(w);
+    Window_t w = initWindow();
+    const int NUM_UNIT_WIDTH = 10;
+    const int NUM_UNIT_HEIGHT = NUM_UNIT_WIDTH / w.aspectRatio;
+    glfwSetKeyCallback(w.w, handleKeys);
+    glfwMakeContextCurrent(w.w);
 
     Shader_t shaderList[] = {
         newShader("src/shaders/vshader.glsl", GL_VERTEX_SHADER),
         newShader("src/shaders/fshader.glsl", GL_FRAGMENT_SHADER)
     };
 
+    Shader_t shaderList2[] = {
+        newShader("src/shaders/vshader2.glsl", GL_VERTEX_SHADER),
+        newShader("src/shaders/fshader.glsl", GL_FRAGMENT_SHADER)
+    };
+
     Program_t program = newProgram(shaderList, 2);
+    Program_t program2 = newProgram(shaderList2, 2);
 
     GLfloat vertices[] = {
         -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.37f, 0.0f, 0.0f, 1.0f, 0.0f,
         0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f
     };
 
     Triangle_t tri = newTriangle(vertices, 18, &program, triInit);
+    Triangle_t tri2 = newTriangle(vertices, 18, &program2, triInit);
 
-    while (!glfwWindowShouldClose(w)) {
+    while (!glfwWindowShouldClose(w.w)) {
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
         glClearBufferfv(GL_COLOR, 0, (float[]) { 0.0f, 0.0f, 0.0f, 0.0f });
 
-        /*mat4 rot = rotationMat4((vec4) { 0, 0, 1, 0 }, glfwGetTime());*/
-        /*GLfloat rotBuf[16] = { 0 };*/
-        /*toArrayMat4(&rot, rotBuf);*/
-        /*GLint rotUniform = glGetUniformLocation(tri.program->name, "rot");*/
-        /*glUniformMatrix4fv(rotUniform, 1, false, rotBuf);*/
-        renderTriangle(&tri);
+        mat4 tr = translationMat4((vec4) { (float)NUM_UNIT_WIDTH / 2, (float)NUM_UNIT_HEIGHT / 2, -10, 0 });
+        mat4 rot = rotationMat4((vec4) { 0, 1, 0, 0 }, glfwGetTime());
+        mat4 rot2 = rotationMat4((vec4) { 0, 1, 0, 0 }, M_PI / 2);
+        mat4 proj = orthoMat4(0, NUM_UNIT_WIDTH, 0, NUM_UNIT_HEIGHT, 0, 100);
 
-        glfwSwapBuffers(w);
+        setUniformMat4(tri.program->name, "tr", &tr);
+        setUniformMat4(tri.program->name, "rot", &rot);
+        setUniformMat4(tri.program->name, "proj", &proj);
+
+        setUniformMat4(tri2.program->name, "tr", &tr);
+        setUniformMat4(tri2.program->name, "rot", &rot);
+        setUniformMat4(tri2.program->name, "rot2", &rot2);
+        setUniformMat4(tri2.program->name, "proj", &proj);
+
+        renderTriangle(&tri);
+        renderTriangle(&tri2);
+
+        glfwSwapBuffers(w.w);
         glfwPollEvents();
     }
 
-    glfwDestroyWindow(w);
+    glfwDestroyWindow(w.w);
     glfwTerminate();
     return 0;
 }

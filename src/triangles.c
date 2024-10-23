@@ -10,14 +10,8 @@ Triangle_t newTriangle(const GLfloat* vertices, size_t n, const Program_t* progr
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glUseProgram(program->name);
 
     init();
-
-    /*glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);*/
-    /*glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));*/
-    /*glEnableVertexAttribArray(0);*/
-    /*glEnableVertexAttribArray(1);*/
 
     Triangle_t tri = {
         .vao = vao,
@@ -30,6 +24,7 @@ Triangle_t newTriangle(const GLfloat* vertices, size_t n, const Program_t* progr
 
 void renderTriangle(const Triangle_t* triangle)
 {
+    glUseProgram(triangle->program->name);
     glBindVertexArray(triangle->vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
