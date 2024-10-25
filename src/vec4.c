@@ -1,5 +1,6 @@
 #include "vec4.h"
 #include <assert.h>
+#include <math.h>
 
 GLfloat indexVec4(vec4* vec, size_t n)
 {
@@ -35,4 +36,17 @@ void setValVec4(vec4* vec, GLfloat val, size_t n)
         vec->w = val;
         break;
     };
+}
+
+GLfloat normVec4(vec4* vec)
+{
+    return sqrtf(vec->x * vec->x + vec->y * vec->y + vec->z * vec->z + vec->w * vec->w);
+}
+
+void normalizeVec4(vec4* vec)
+{
+    vec->x = vec->x / normVec4(vec);
+    vec->y = vec->y / normVec4(vec);
+    vec->z = vec->z / normVec4(vec);
+    vec->w = vec->w / normVec4(vec);
 }

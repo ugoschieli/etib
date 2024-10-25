@@ -15,4 +15,8 @@ GLfloat indexVec4(vec4* vec, size_t n);
 
 void setValVec4(vec4* vec, GLfloat val, size_t n);
 
+GLfloat normVec4(vec4* vec);
+
+void normalizeVec4(vec4* vec);
+
 #endif // VEC4_H
