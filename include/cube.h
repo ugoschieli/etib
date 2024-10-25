@@ -4,6 +4,11 @@
 #include <GL/gl3w.h>
 #include "shaders.h"
 
+typedef struct CubeGlobal {
+    GLuint vbo;
+    GLuint ebo;
+} CubeGlobal_t;
+
 typedef struct Vertex {
     GLfloat x;
     GLfloat y;
@@ -12,15 +17,17 @@ typedef struct Vertex {
 
 typedef struct Cube {
     GLuint vao;
-    GLuint vbo;
     const Program_t* program;
-    const Vertex_t* vertices;
-    const GLuint* indices;
+    GLfloat x;
+    GLfloat y;
+    GLfloat z;
 } Cube_t;
 
-typedef void (*AttribInit)(GLuint);
+typedef void (*AttribInit)(Cube_t*);
 
-Cube_t newCube(const Vertex_t* vertices, GLsizeiptr size, GLuint* indices, const Program_t* program, AttribInit init);
+void initGlobalState(CubeGlobal_t* state);
+
+Cube_t newCube(const CubeGlobal_t* state, const Program_t* program, AttribInit init);
 
 void renderCube(const Cube_t* cube);
 

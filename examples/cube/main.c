@@ -18,14 +18,34 @@ static void handleKeys(GLFWwindow* w, int key, int scancode, int action, int mod
     }
 }
 
-static void triInit(GLuint vao)
+GLfloat colors[] = {
+    1, 0, 0, 1, 0, 0, //
+    0, 1, 0, 0, 1, 0, //
+    0, 0, 1, 0, 0, 1, //
+    1, 0, 1, 1, 0, 1, //
+    1, 1, 0, 1, 1, 0, //
+    0, 1, 1, 0, 1, 1, //
+};
+
+int NUM_UNIT_WIDTH = 0;
+int NUM_UNIT_HEIGHT = 0;
+
+static void cubeInit(Cube_t* cube)
 {
-    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(cube->vao, 0);
+    glVertexArrayAttribFormat(cube->vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribBinding(cube->vao, 0, 0);
 
-    glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    mat4 base = initMat4((vec4) { 1, 0, 0, 0 }, (vec4) { 0, 0, -1, 0 }, (vec4) { 0, 1, 0, 0 }, (vec4) { 0, 0, 0, 1 });
+    mat4 proj = orthoMat4(0, NUM_UNIT_WIDTH, 0, NUM_UNIT_HEIGHT, 0, 100);
 
-    glVertexArrayAttribBinding(vao, 0, 0);
+    setUniformMat4(cube->program->name, "base", &base);
+    setUniformMat4(cube->program->name, "proj", &proj);
+
+    setUniform3fv(cube->program->name, "colors", colors, 12);
 }
+
+CubeGlobal_t state_g = { 0 };
 
 int main(void)
 {
@@ -33,10 +53,12 @@ int main(void)
     gl3wInit();
 
     Window_t w = initWindow();
-    const int NUM_UNIT_WIDTH = 10;
-    const int NUM_UNIT_HEIGHT = NUM_UNIT_WIDTH / w.aspectRatio;
+    NUM_UNIT_WIDTH = 10;
+    NUM_UNIT_HEIGHT = NUM_UNIT_WIDTH / w.aspectRatio;
     glfwSetKeyCallback(w.w, handleKeys);
     glfwMakeContextCurrent(w.w);
+
+    initGlobalState(&state_g);
 
     Shader_t shaderList[] = {
         newShader("shaders/vshader.glsl", GL_VERTEX_SHADER),
@@ -44,60 +66,15 @@ int main(void)
     };
 
     Program_t program = newProgram(shaderList, 2);
+    Program_t program2 = newProgram(shaderList, 2);
 
-    Vertex_t vertices[] = {
-        (Vertex_t) { -0.5, -0.5, -0.5 }, // left bottom front 0
-        (Vertex_t) { 0.5, -0.5, -0.5 }, // right bottom front 1
-        (Vertex_t) { -0.5, -0.5, 0.5 }, // left up front      2
-        (Vertex_t) { 0.5, -0.5, 0.5 }, // right up front      3
-
-        (Vertex_t) { -0.5, 0.5, -0.5 }, // left bottom back 4
-        (Vertex_t) { 0.5, 0.5, -0.5 }, // right bottom back 5
-        (Vertex_t) { -0.5, 0.5, 0.5 }, // left up back      6
-        (Vertex_t) { 0.5, 0.5, 0.5 }, // right up back      7
-    };
-
-    GLfloat colors[] = {
-        1, 0, 0, 1, 0, 0, //
-        0, 1, 0, 0, 1, 0, //
-        0, 0, 1, 0, 0, 1, //
-        1, 0, 1, 1, 0, 1, //
-        1, 1, 0, 1, 1, 0, //
-        0, 1, 1, 0, 1, 1, //
-    };
-
-    GLuint indices[] = {
-        0, 1, 3, // first triangle front face
-        3, 2, 0, // second triangle front face
-
-        0, 2, 6, // first triangle left face
-        6, 4, 0, // second triangle left face
-
-        1, 3, 7, // first triangle right face
-        7, 5, 1, // second triangle right face
-
-        4, 5, 7, // first triangle back face
-        7, 6, 4, // second triangle back face
-
-        2, 3, 7, // first triangle up face
-        7, 6, 2, // second triangle up face
-
-        0, 1, 5, // first triangle bottom face
-        5, 4, 0, // second triangle bottom face
-    };
-
-    Cube_t cube = newCube(vertices, sizeof(vertices), indices, &program, triInit);
-
-    mat4 base = initMat4((vec4) { 1, 0, 0, 0 }, (vec4) { 0, 0, -1, 0 }, (vec4) { 0, 1, 0, 0 }, (vec4) { 0, 0, 0, 1 });
+    Cube_t cube = newCube(&state_g, &program, cubeInit);
+    Cube_t cube2 = newCube(&state_g, &program2, cubeInit);
 
     mat4 tr = translationMat4((vec4) { (float)NUM_UNIT_WIDTH / 2, 3, (float)NUM_UNIT_HEIGHT / 2, 0 });
-    mat4 proj = orthoMat4(0, NUM_UNIT_WIDTH, 0, NUM_UNIT_HEIGHT, 0, 100);
-
+    mat4 tr2 = translationMat4((vec4) { (float)NUM_UNIT_WIDTH / 2 + 2, 3, (float)NUM_UNIT_HEIGHT / 2, 0 });
     setUniformMat4(cube.program->name, "tr", &tr);
-    setUniformMat4(cube.program->name, "base", &base);
-    setUniformMat4(cube.program->name, "proj", &proj);
-
-    setUniform3fv(cube.program->name, "colors", colors, 12);
+    setUniformMat4(cube2.program->name, "tr", &tr2);
 
     vec4 axis = { 0, 1, 1, 0 };
     normalizeVec4(&axis);
@@ -111,8 +88,10 @@ int main(void)
         /*mat4 rot = rotationMat4(axis, 0);*/
 
         setUniformMat4(cube.program->name, "rot", &rot);
+        setUniformMat4(cube2.program->name, "rot", &rot);
 
         renderCube(&cube);
+        renderCube(&cube2);
 
         glfwSwapBuffers(w.w);
         glfwPollEvents();
