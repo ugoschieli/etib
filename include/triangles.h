@@ -11,11 +11,12 @@ typedef struct Triangle {
     GLuint vbo;
     const Program_t* program;
     const GLfloat* vertices;
+    const GLuint* indices;
 } Triangle_t;
 
 typedef void (*AttribInit)(GLuint);
 
-Triangle_t newTriangle(const GLfloat* vertices, size_t n, const Program_t* program, AttribInit init);
+Triangle_t newTriangle(const GLfloat* vertices, size_t n, GLuint* indices, const Program_t* program, AttribInit init);
 
 void renderTriangle(const Triangle_t* triangle);
 

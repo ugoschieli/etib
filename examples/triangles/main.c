@@ -3,21 +3,11 @@
 #include "GL/gl3w.h"
 #include <GLFW/glfw3.h>
 
-#define LOG_H_IMPL
-#include "log.h"
 #include "shaders.h"
 #include "triangles.h"
 #include "mat4.h"
 #include "uniform.h"
-
-typedef struct Window {
-    GLFWwindow* w;
-    GLFWmonitor* monitor;
-    int width;
-    int height;
-    float aspectRatio;
-    int refreshRate;
-} Window_t;
+#include "window.h"
 
 static void handleKeys(GLFWwindow* w, int key, int scancode, int action, int mods)
 {
@@ -27,27 +17,6 @@ static void handleKeys(GLFWwindow* w, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(w, true);
     }
-}
-
-static Window_t initWindow(void)
-{
-    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    print_debug("Refresh rate: %d", mode->refreshRate);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    GLFWwindow* w = glfwCreateWindow(mode->width, mode->height, "Etib", monitor, 0);
-
-    return (Window_t) {
-        .w = w,
-        .monitor = monitor,
-        .width = mode->width,
-        .height = mode->height,
-        .aspectRatio = (float)mode->width / mode->height,
-        .refreshRate = mode->refreshRate
-    };
 }
 
 static void triInit(GLuint vao)
@@ -74,13 +43,13 @@ int main(void)
     glfwMakeContextCurrent(w.w);
 
     Shader_t shaderList[] = {
-        newShader("src/shaders/vshader.glsl", GL_VERTEX_SHADER),
-        newShader("src/shaders/fshader.glsl", GL_FRAGMENT_SHADER)
+        newShader("shaders/vshader.glsl", GL_VERTEX_SHADER),
+        newShader("shaders/fshader.glsl", GL_FRAGMENT_SHADER)
     };
 
     Shader_t shaderList2[] = {
-        newShader("src/shaders/vshader2.glsl", GL_VERTEX_SHADER),
-        newShader("src/shaders/fshader.glsl", GL_FRAGMENT_SHADER)
+        newShader("shaders/vshader2.glsl", GL_VERTEX_SHADER),
+        newShader("shaders/fshader.glsl", GL_FRAGMENT_SHADER)
     };
 
     Program_t program = newProgram(shaderList, 2);
@@ -95,8 +64,10 @@ int main(void)
         0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // third vertex
     };
 
-    Triangle_t tri = newTriangle(vertices, 18, &program, triInit);
-    Triangle_t tri2 = newTriangle(vertices, 18, &program2, triInit);
+    GLuint indices[] = { 0, 1, 2 };
+
+    Triangle_t tri = newTriangle(vertices, 18, indices, &program, triInit);
+    Triangle_t tri2 = newTriangle(vertices, 18, indices, &program2, triInit);
 
     while (!glfwWindowShouldClose(w.w)) {
         glEnable(GL_DEPTH_TEST);
