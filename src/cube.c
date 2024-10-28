@@ -50,6 +50,9 @@ Cube_t newCube(const CubeGlobal_t* state, const Program_t* program, AttribInit i
     Cube_t cube = {
         .vao = vao,
         .program = program,
+        .x = 0,
+        .y = 0,
+        .z = 0,
     };
 
     init(&cube);
