@@ -1,4 +1,5 @@
 #include "cube.h"
+#include "GL/gl3w.h"
 
 Vertex_t vertices_g[] = {
     (Vertex_t) { -0.5, -0.5, -0.5 }, // left bottom front 0

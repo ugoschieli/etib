@@ -2,7 +2,6 @@
 #define MAT4_H
 
 #include <stdlib.h>
-#include "GL/glcorearb.h"
 #include "vec4.h"
 
 typedef struct mat4 {
@@ -16,9 +15,9 @@ typedef struct mat4 {
 /*    GLfloat matrix[4 * 4];*/
 /*} mat4;*/
 
-GLfloat indexMat4(mat4* mat, size_t m, size_t n);
+float indexMat4(mat4* mat, size_t m, size_t n);
 
-void setValMat4(mat4* mat, GLfloat val, size_t m, size_t n);
+void setValMat4(mat4* mat, float val, size_t m, size_t n);
 
 mat4 initMat4(vec4 col1, vec4 col2, vec4 col3, vec4 col4);
 
@@ -34,11 +33,11 @@ mat4 scalingMat4(vec4 u);
 
 mat4 translationMat4(vec4 u);
 
-mat4 rotationMat4(vec4 u, GLfloat a);
+mat4 rotationMat4(vec4 u, float a);
 
-mat4 orthoMat4(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far);
+mat4 orthoMat4(float left, float right, float bottom, float top, float near, float far);
 
-void toArrayMat4(mat4* mat, GLfloat* buf);
+void toArrayMat4(mat4* mat, float* buf);
 
 void printMat4(mat4* mat);
 

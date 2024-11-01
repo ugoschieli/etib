@@ -1,8 +1,9 @@
 #include "vec4.h"
+
 #include <assert.h>
 #include <math.h>
 
-GLfloat indexVec4(vec4* vec, size_t n)
+float indexVec4(vec4* vec, size_t n)
 {
     assert(n >= 1 && n <= 4);
     switch (n) {
@@ -19,7 +20,7 @@ GLfloat indexVec4(vec4* vec, size_t n)
     };
 }
 
-void setValVec4(vec4* vec, GLfloat val, size_t n)
+void setValVec4(vec4* vec, float val, size_t n)
 {
     assert(n >= 1 && n <= 4);
     switch (n) {
@@ -38,7 +39,7 @@ void setValVec4(vec4* vec, GLfloat val, size_t n)
     };
 }
 
-GLfloat normVec4(vec4* vec)
+float normVec4(vec4* vec)
 {
     return sqrtf(vec->x * vec->x + vec->y * vec->y + vec->z * vec->z + vec->w * vec->w);
 }

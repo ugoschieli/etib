@@ -1,3 +1,5 @@
+#include "log.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include "GL/gl3w.h"

@@ -1,26 +1,25 @@
 #ifndef CUBE_H
 #define CUBE_H
 
-#include <GL/gl3w.h>
 #include "shaders.h"
 
 typedef struct CubeGlobal {
-    GLuint vbo;
-    GLuint ebo;
+    uint vbo;
+    uint ebo;
 } CubeGlobal_t;
 
 typedef struct Vertex {
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
+    float x;
+    float y;
+    float z;
 } Vertex_t;
 
 typedef struct Cube {
-    GLuint vao;
+    uint vao;
     const Program_t* program;
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
+    float x;
+    float y;
+    float z;
 } Cube_t;
 
 typedef void (*AttribInit)(Cube_t*);

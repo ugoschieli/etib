@@ -1,16 +1,18 @@
 #include "triangles.h"
 
-Triangle_t newTriangle(const GLfloat* vertices, size_t n, GLuint* indices, const Program_t* program, AttribInit init)
+#include "GL/gl3w.h"
+
+Triangle_t newTriangle(const float* vertices, size_t n, uint* indices, const Program_t* program, AttribInit init)
 {
-    GLuint vao;
-    GLuint vbo;
-    GLuint ebo;
+    uint vao;
+    uint vbo;
+    uint ebo;
     glCreateVertexArrays(1, &vao);
     glCreateBuffers(1, &vbo);
     glCreateBuffers(1, &ebo);
-    glNamedBufferStorage(vbo, (GLsizeiptr)(n * sizeof(GLfloat)), vertices, 0);
-    glNamedBufferStorage(ebo, (GLsizeiptr)(3 * sizeof(GLuint)), indices, 0);
-    glVertexArrayVertexBuffer(vao, 0, vbo, 0, 6 * sizeof(GLfloat));
+    glNamedBufferStorage(vbo, (GLsizeiptr)(n * sizeof(float)), vertices, 0);
+    glNamedBufferStorage(ebo, (GLsizeiptr)(3 * sizeof(uint)), indices, 0);
+    glVertexArrayVertexBuffer(vao, 0, vbo, 0, 6 * sizeof(float));
     glVertexArrayElementBuffer(vao, ebo);
 
     init(vao);

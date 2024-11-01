@@ -1,10 +1,11 @@
 #include "mat4.h"
+
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
 #include <string.h>
 
-GLfloat indexMat4(mat4* mat, size_t m, size_t n)
+float indexMat4(mat4* mat, size_t m, size_t n)
 {
     assert(n >= 1 && n <= 4);
     switch (n) {
@@ -50,7 +51,7 @@ mat4 initMat4(vec4 col1, vec4 col2, vec4 col3, vec4 col4)
     return mat;
 }
 
-void setValMat4(mat4* mat, GLfloat val, size_t m, size_t n)
+void setValMat4(mat4* mat, float val, size_t m, size_t n)
 {
     assert(n >= 1 && n <= 4);
     switch (n) {
@@ -104,7 +105,7 @@ mat4 multiplyMat4(mat4* m1, mat4* m2)
     mat4 r = { 0 };
     for (size_t i = 1; i <= 4; ++i) {
         for (size_t j = 1; j <= 4; ++j) {
-            GLfloat sum = 0;
+            float sum = 0;
             for (size_t k = 1; k <= 4; ++k) {
                 sum += indexMat4(m1, i, k) * indexMat4(m2, k, j);
             }
@@ -134,7 +135,7 @@ mat4 translationMat4(vec4 u)
     return tr;
 }
 
-mat4 rotationMat4(vec4 u, GLfloat a)
+mat4 rotationMat4(vec4 u, float a)
 {
     mat4 rot = { 0 };
 
@@ -169,7 +170,7 @@ mat4 rotationMat4(vec4 u, GLfloat a)
     return rot;
 }
 
-mat4 orthoMat4(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far)
+mat4 orthoMat4(float left, float right, float bottom, float top, float near, float far)
 {
     return initMat4(
         (vec4) { 2 / (right - left), 0, 0, 0 },
@@ -178,9 +179,9 @@ mat4 orthoMat4(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat
         (vec4) { -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(far + near) / (far - near), 1 });
 }
 
-void toArrayMat4(mat4* mat, GLfloat* buf)
+void toArrayMat4(mat4* mat, float* buf)
 {
-    memcpy(buf, mat, 16 * sizeof(GLfloat));
+    memcpy(buf, mat, 16 * sizeof(float));
 }
 
 void printMat4(mat4* mat)

@@ -1,7 +1,9 @@
 #include "shaders.h"
+
 #include "log.h"
 #include <stdio.h>
 #include <string.h>
+#include "GL/gl3w.h"
 
 static char* loadFile(char* path)
 {
@@ -31,25 +33,25 @@ static char* loadFile(char* path)
     return buf;
 }
 
-static GLuint createShader(char* src, GLenum type)
+static uint createShader(char* src, uint type)
 {
-    GLuint shader = glCreateShader(type);
+    uint shader = glCreateShader(type);
     if (shader == 0) {
         print_error("Failed to create shader");
         return 0;
     }
 
-    glShaderSource(shader, 1, (const GLchar* const*)&src, NULL);
+    glShaderSource(shader, 1, (const char* const*)&src, NULL);
     free((void*)src);
     glCompileShader(shader);
 
-    GLint status = GL_FALSE;
+    int status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if (status == GL_FALSE) {
-        GLint infoLen = 0;
+        int infoLen = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        GLchar info[infoLen];
-        GLsizei len;
+        char info[infoLen];
+        int len;
         glGetShaderInfoLog(shader, infoLen, &len, info);
         print_error("Failed to compile shader: %s", info);
     }
@@ -57,9 +59,9 @@ static GLuint createShader(char* src, GLenum type)
     return shader;
 }
 
-static GLuint createProgram(Shader_t* shaderList, size_t n)
+static uint createProgram(Shader_t* shaderList, size_t n)
 {
-    GLuint program = glCreateProgram();
+    uint program = glCreateProgram();
     for (size_t i = 0; i < n; ++i) {
         glAttachShader(program, shaderList[i].name);
     }
@@ -67,7 +69,7 @@ static GLuint createProgram(Shader_t* shaderList, size_t n)
     return program;
 }
 
-Shader_t newShader(char* path, GLenum type)
+Shader_t newShader(char* path, uint type)
 {
     char* src = loadFile(path);
     if (src == NULL) {
