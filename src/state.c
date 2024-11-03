@@ -1,5 +1,7 @@
 #include "state.h"
 
+#include "stdlib.h"
+
 void tick(GameState_t* state)
 {
     float time = glfwGetTime();
@@ -9,10 +11,10 @@ void tick(GameState_t* state)
 
 void handleKeys(GameState_t* state)
 {
-    if (state->keyState.right == true) {
-        state->cube.x += state->deltaTime * 1;
-    }
-    if (state->keyState.left == true) {
-        state->cube.x -= state->deltaTime * 1;
-    }
+    (void)state;
+}
+
+void destroyState(GameState_t* state)
+{
+    free(state->map.cubes);
 }

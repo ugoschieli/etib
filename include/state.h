@@ -1,9 +1,9 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include "shaders.h"
 #include <stdbool.h>
 #include <GLFW/glfw3.h>
-#include "cube.h"
 
 typedef struct KeyState {
     bool right;
@@ -19,6 +19,33 @@ typedef struct Window {
     int refreshRate;
 } Window_t;
 
+typedef struct Color {
+    float r;
+    float g;
+    float b;
+} Color_t;
+
+typedef struct Position {
+    float x;
+    float y;
+    float z;
+} Position_t;
+
+typedef struct Cube {
+    Position_t pos;
+    Color_t color;
+} Cube_t;
+
+typedef struct Map {
+    uint vao;
+    Program_t program;
+    uint vbo;
+    uint ebo;
+    size_t len;
+    size_t capacity;
+    Cube_t* cubes;
+} Map_t;
+
 typedef struct GameState {
     float deltaTime;
     float lastTime;
@@ -26,11 +53,13 @@ typedef struct GameState {
     int numUnitWidth;
     int numUnitHeight;
     KeyState_t keyState;
-    Cube_t cube;
+    Map_t map;
 } GameState_t;
 
 void tick(GameState_t* state);
 
 void handleKeys(GameState_t* state);
+
+void destroyState(GameState_t* state);
 
 #endif // STATE_H

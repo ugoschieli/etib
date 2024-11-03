@@ -10,7 +10,10 @@ all: etib
 etib: $(SOURCES)
 	${CC} ${CFLAGS} $^ -o $@ $(LDFLAGS)
 
-.PHONY: clean clangd
+.PHONY: clean clangd run
+
+run: etib
+	./etib
 
 clean:
 	rm -rf ./cube
