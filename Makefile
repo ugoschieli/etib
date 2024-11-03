@@ -1,21 +1,16 @@
 CC = clang
 CFLAGS = -g -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3` -I./include
-LDFLAGS = -L./libs `pkg-config --libs gl glfw3` -lm
+LDFLAGS = `pkg-config --libs gl glfw3` -lm
 
 SOURCEDIR = ./src
-SOURCES = $(wildcard $(SOURCEDIR)/*.c)
+SOURCES = $(wildcard $(SOURCEDIR)/*.c) main.c
 
-all: libetib.so
+all: etib
 
-examples: cube libetib.so
+etib: $(SOURCES)
+	${CC} ${CFLAGS} $^ -o $@ $(LDFLAGS)
 
-libetib.so: $(SOURCES)
-	${CC} ${CFLAGS} -fPIC -shared $^ -o libs/$@ $(LDFLAGS)
-
-cube: examples/cube/main.c
-	${CC} ${CFLAGS} examples/cube/main.c -o examples/cube/cube ${LDFLAGS} -letib
-
-.PHONY: run clean clangd
+.PHONY: clean clangd
 
 clean:
 	rm -rf ./cube
