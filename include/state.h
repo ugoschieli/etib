@@ -1,7 +1,7 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "shaders.h"
+#include "map.h"
 #include <stdbool.h>
 #include <GLFW/glfw3.h>
 
@@ -18,33 +18,6 @@ typedef struct Window {
     float aspectRatio;
     int refreshRate;
 } Window_t;
-
-typedef struct Color {
-    float r;
-    float g;
-    float b;
-} Color_t;
-
-typedef struct Position {
-    float x;
-    float y;
-    float z;
-} Position_t;
-
-typedef struct Cube {
-    Position_t pos;
-    Color_t color;
-} Cube_t;
-
-typedef struct Map {
-    uint vao;
-    Program_t program;
-    uint vbo;
-    uint ebo;
-    size_t len;
-    size_t capacity;
-    Cube_t* cubes;
-} Map_t;
 
 typedef struct GameState {
     float deltaTime;

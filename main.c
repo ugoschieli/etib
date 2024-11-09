@@ -44,7 +44,7 @@ int main(void)
     glfwSetErrorCallback(errorCallback);
 
     initWindow(&STATE, keyCallback);
-    initMap(&STATE);
+    initMap(&STATE.map, STATE.numUnitWidth, STATE.numUnitHeight);
 
     while (!glfwWindowShouldClose(STATE.window.w)) {
         glfwPollEvents();
@@ -55,7 +55,7 @@ int main(void)
         tick(&STATE);
         handleKeys(&STATE);
 
-        renderMap(&STATE);
+        renderMap(&STATE.map);
 
         glfwSwapBuffers(STATE.window.w);
     }

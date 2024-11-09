@@ -17,4 +17,6 @@ void handleKeys(GameState_t* state)
 void destroyState(GameState_t* state)
 {
     free(state->map.cubes);
+    free(state->map.posMat);
+    free(state->map.colors);
 }

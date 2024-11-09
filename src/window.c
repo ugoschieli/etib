@@ -25,7 +25,7 @@ Window_t initWindow(GameState_t* state, GLFWkeyfun keyCb)
     };
 
     state->window = window;
-    state->numUnitWidth = 10;
+    state->numUnitWidth = 100;
     state->numUnitHeight = state->numUnitWidth / window.aspectRatio;
 
     return window;

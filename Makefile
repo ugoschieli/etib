@@ -1,6 +1,6 @@
 CC = clang
-CFLAGS = -g -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3` -I./include
-LDFLAGS = `pkg-config --libs gl glfw3` -lm
+CFLAGS = -g -Wall -Wextra -Wpedantic `pkg-config --cflags glfw3 freetype2` -I./include
+LDFLAGS = `pkg-config --libs gl glfw3 freetype2` -lm
 
 SOURCEDIR = ./src
 SOURCES = $(wildcard $(SOURCEDIR)/*.c) main.c
@@ -16,7 +16,7 @@ run: etib
 	./etib
 
 clean:
-	rm -rf ./cube
+	rm -rf ./etib
 
 clangd: clean
 	rm compile_commands.json
