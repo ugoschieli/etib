@@ -3,16 +3,25 @@ use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::Shader;
 
+/// A wrapper around muliple wgpu structs that holds the graphics state of the app
 pub struct Gfx {
+    /// The wgpu Instance
     pub instance: wgpu::Instance,
+    /// The wgpu Surface
     pub surface: wgpu::Surface<'static>,
+    /// The wgpu SurfaceConfiguration
     pub surface_config: wgpu::SurfaceConfiguration,
+    /// The wgpu device
     pub device: wgpu::Device,
+    /// The wgpu Queue
     pub queue: wgpu::Queue,
+    /// The wgpu RenderPipeline
     pub pipeline: wgpu::RenderPipeline,
 }
 
 impl Gfx {
+    /// Create a new wgpu Instance and initialize the Gfx struct.
+    /// Need to be called only once at the initialization of an app.
     pub fn new(window: Arc<Window>) -> Gfx {
         let window_size = window.inner_size();
 
@@ -96,6 +105,7 @@ impl Gfx {
         }
     }
 
+    /// Needs to be called every frames
     pub fn render(&mut self) {
         let frame = self.surface.get_current_texture().unwrap();
         let view = frame
@@ -129,6 +139,8 @@ impl Gfx {
         frame.present();
     }
 
+    /// Helper function to reconfigure the Surface size. Needs to be called when the window is
+    /// resized.
     pub fn reconfigure_surface_size(&mut self, size: PhysicalSize<u32>) {
         self.surface_config.width = size.width;
         self.surface_config.height = size.height;

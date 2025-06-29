@@ -1,5 +1,6 @@
 use crate::gfx::Gfx;
 
+use log;
 use std::sync::Arc;
 use std::time::Instant;
 use winit::application::ApplicationHandler;
@@ -8,20 +9,25 @@ use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
 
-pub struct App {
+/// The main state of the game
+pub struct Game {
+    /// The winit window
     pub window: Option<Arc<Window>>,
+    /// The graphics state
     pub gfx: Option<Gfx>,
+    /// The time interval since the previous frame
     pub dt: f32,
     last_time: Instant,
 }
 
-impl App {
-    pub fn new() -> (App, EventLoop<()>) {
+impl Game {
+    /// Initialize a new Game
+    pub fn new() -> (Game, EventLoop<()>) {
         let event_loop = EventLoop::new().unwrap();
         event_loop.set_control_flow(ControlFlow::Poll);
 
         (
-            App {
+            Game {
                 window: None,
                 gfx: None,
                 dt: 0.,
@@ -31,6 +37,7 @@ impl App {
         )
     }
 
+    /// Launch a Game
     pub fn run(&mut self, event_loop: EventLoop<()>) -> Result<(), EventLoopError> {
         event_loop.run_app(self)
     }
@@ -40,11 +47,11 @@ impl App {
         let dt = now.duration_since(self.last_time).as_secs_f32();
         self.dt = dt;
         self.last_time = now;
-        println!("dt = {}, fps = {}", 1000. * dt, 1. / dt);
+        log::debug!("dt = {}, fps = {}", 1000. * dt, 1. / dt);
     }
 }
 
-impl ApplicationHandler for App {
+impl ApplicationHandler for Game {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let mut attributes = Window::default_attributes();
         attributes.title = "ETIB".to_owned();

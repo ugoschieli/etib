@@ -1,3 +1,7 @@
+#![warn(missing_docs)]
+
+//! The ETIB Game engine crate.
+
 mod gfx;
 mod shader;
 mod window;
