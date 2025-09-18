@@ -1,7 +1,13 @@
 use std::sync::Arc;
+use wgpu::util::DeviceExt;
 use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::Shader;
+use crate::buffer::BufferExt;
+use crate::camera::{Camera, CameraUniform};
+use crate::pipeline::Pipeline;
+use crate::uniform::Uniform;
+use crate::vertex;
 
 /// A wrapper around muliple wgpu structs that holds the graphics state of the app
 pub struct Gfx {
@@ -16,7 +22,18 @@ pub struct Gfx {
     /// The wgpu Queue
     pub queue: wgpu::Queue,
     /// The wgpu RenderPipeline
-    pub pipeline: wgpu::RenderPipeline,
+    pub pipeline: Pipeline,
+    /// A vertex Buffer
+    pub vertex_buffer: wgpu::Buffer,
+    /// An index Buffer
+    pub index_buffer: wgpu::Buffer,
+    /// The camera
+    pub camera: Camera,
+    pub camera_uniform: CameraUniform,
+    pub camera_buffer: wgpu::Buffer,
+    pub cam_uniform: Uniform,
+    /// The Depth Buffer Texture View
+    pub depth_texture_view: wgpu::TextureView,
 }
 
 impl Gfx {
@@ -39,61 +56,88 @@ impl Gfx {
         let (device, queue) =
             pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).unwrap();
 
-        let mut surface_config = surface
+        let surface_config = surface
             .get_default_config(&adapter, window_size.width, window_size.height)
             .unwrap();
-        surface_config.present_mode = wgpu::PresentMode::Immediate;
-        surface_config.desired_maximum_frame_latency = 0;
         surface.configure(&device, &surface_config);
 
-        let shader = Shader::new(
-            r#"
-                @vertex
-                fn vs_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
-                    let x = f32(i32(in_vertex_index) - 1);
-                    let y = f32(i32(in_vertex_index & 1u) * 2 - 1);
-                    return vec4<f32>(x, y, 0.0, 1.0);
-                }
+        let camera = Camera {
+            // position the camera 1 unit up and 2 units back
+            // +z is out of the screen
+            eye: (2.0, 2.0, 3.0).into(),
+            // have it look at the origin
+            target: (0.0, 0.0, 0.0).into(),
+            // which way is "up"
+            up: cgmath::Vector3::unit_y(),
+            aspect: window_size.width as f32 / window_size.height as f32,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+        };
 
-                @fragment
-                fn fs_main() -> @location(0) vec4<f32> {
-                    return vec4<f32>(1.0, 0.0, 0.0, 1.0);
-                }
-                "#,
+        let mut camera_uniform = CameraUniform::new();
+        camera_uniform.update_view_proj(&camera);
+        let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Camera Buffer"),
+            contents: bytemuck::cast_slice(&[camera_uniform]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("depth_texture"),
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Depth24PlusStencil8,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+            size: wgpu::Extent3d {
+                width: window_size.width,
+                height: window_size.height,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 1,
+            sample_count: 1,
+        });
+
+        let depth_texture_view = depth_texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+        let vertex_buffer = device.create_vertex_buffer(vertex::VERTICES, vertex::Vertex::desc());
+        // let vertex_buffer = device.create_vertex_buffer(vertex::VERTICES2, vertex::Vertex::desc());
+
+        let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Index Buffer"),
+            contents: bytemuck::cast_slice(vertex::INDICES),
+            usage: wgpu::BufferUsages::INDEX,
+        });
+
+        let shader_str = include_str!("./shaders/shader.wgsl");
+        let shader = Shader::new(shader_str, &device, None);
+
+        let cam_uniform = Uniform::new(
             &device,
+            &wgpu::BindGroupLayoutDescriptor {
+                entries: &[wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+                label: Some("camera_bind_group_layout"),
+            },
+            vec![camera_buffer.as_entire_binding()],
             None,
         );
 
-        let swapchain_capabilities = surface.get_capabilities(&adapter);
-        let swapchain_format = swapchain_capabilities.formats[0];
-
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: None,
-            bind_group_layouts: &[],
-            push_constant_ranges: &[],
-        });
-
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: None,
-            layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader.module,
-                entry_point: Some("vs_main"),
-                buffers: &[],
-                compilation_options: Default::default(),
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader.module,
-                entry_point: Some("fs_main"),
-                targets: &[Some(swapchain_format.into())],
-                compilation_options: Default::default(),
-            }),
-            primitive: wgpu::PrimitiveState::default(),
-            depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            multiview: None,
-            cache: None,
-        });
+        let pipeline = Pipeline::new(
+            &device,
+            &[&cam_uniform.layout],
+            &shader,
+            &surface_config,
+            &vertex_buffer,
+        );
 
         Gfx {
             instance,
@@ -102,6 +146,13 @@ impl Gfx {
             device,
             queue,
             pipeline,
+            vertex_buffer: vertex_buffer.buffer,
+            index_buffer,
+            camera,
+            camera_uniform,
+            camera_buffer,
+            cam_uniform,
+            depth_texture_view,
         }
     }
 
@@ -125,14 +176,26 @@ impl Gfx {
                         load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
                         store: wgpu::StoreOp::Store,
                     },
+                    depth_slice: None,
                 })],
-                depth_stencil_attachment: None,
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth_texture_view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Store,
+                    }),
+                    stencil_ops: None,
+                }),
                 timestamp_writes: None,
                 occlusion_query_set: None,
             });
 
-            render_pass.set_pipeline(&self.pipeline);
-            render_pass.draw(0..3, 0..1);
+            render_pass.set_pipeline(&self.pipeline.pipeline);
+            render_pass.set_bind_group(0, &self.cam_uniform.bind_group, &[]);
+            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+            render_pass.draw_indexed(0..vertex::INDICES.len() as u32, 0, 0..1);
+            // render_pass.draw(0..vertex::VERTICES2.len() as u32, 0..1);
         }
 
         self.queue.submit(Some(encoder.finish()));
